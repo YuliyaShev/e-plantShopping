@@ -1,6 +1,7 @@
+// Import useSelector to read from the Redux store
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addItem } from './CartSlice'; // Make sure this path is correct
+import { useSelector, useDispatch } from 'react-redux';
+import { addItem } from './CartSlice';
 import './ProductList.css';
 import CartItem from './CartItem';
 
@@ -8,9 +9,16 @@ function ProductList({ onHomeClick }) {
     const [showCart, setShowCart] = useState(false);
     const [showPlants, setShowPlants] = useState(false);
     
-    // Task 1: State to track which products are added to the cart
     const [addedToCart, setAddedToCart] = useState({});
+    
+    // Get the array of items from the Redux cart state
+    const cartItems = useSelector(state => state.cart.items);
     const dispatch = useDispatch();
+
+    // This function calculates the total number of items in the cart
+    const calculateTotalQuantity = () => {
+        return cartItems.reduce((total, item) => total + item.quantity, 0);
+    };
 
     const plantsArray = [
         {
@@ -220,9 +228,7 @@ function ProductList({ onHomeClick }) {
         }
     ];
 
-    // Task 1: Function to handle adding a product to the cart
     const handleAddToCart = (product) => {
-        // Create a new product object with the cost as a number for calculations
         const productWithNumericCost = {
             ...product,
             cost: Number(product.cost.replace('$', ''))
@@ -291,12 +297,19 @@ function ProductList({ onHomeClick }) {
                 </div>
                 <div style={styleObjUl}>
                     <div> <a href="#" onClick={(e) => handlePlantsClick(e)} style={styleA}>Plants</a></div>
-                    <div> <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}><h1 className='cart'><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68"><rect width="156" height="156" fill="none"></rect><circle cx="80" cy="216" r="12"></circle><circle cx="184" cy="216" r="12"></circle><path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" id="mainIconPathAttribute"></path></svg></h1></a></div>
+                    <div> 
+                        <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}>
+                            <h1 className='cart'>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68"><rect width="156" height="156" fill="none"></rect><circle cx="80" cy="216" r="12"></circle><circle cx="184" cy="216" r="12"></circle><path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" id="mainIconPathAttribute"></path></svg>
+                                {/* This span will display the total number of items in the cart */}
+                                <span className="cart-count">{calculateTotalQuantity()}</span>
+                            </h1>
+                        </a>
+                    </div>
                 </div>
             </div>
             {!showCart ? (
                 <div className="product-grid">
-                    {/* Task 1: Display the plant details */}
                     {plantsArray.map((category, index) => (
                         <div key={index}>
                             <h1>
@@ -316,6 +329,7 @@ function ProductList({ onHomeClick }) {
                                         <button
                                             className="product-button"
                                             onClick={() => handleAddToCart(plant)}
+                                            disabled={addedToCart[plant.name]} // Disable button if item is in cart
                                         >
                                             {addedToCart[plant.name] ? 'Added to Cart' : 'Add to Cart'}
                                         </button>
